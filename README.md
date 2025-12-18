@@ -41,6 +41,12 @@ Remove command            lcs --remove hello</br>
 Print/View cmd            lcs --print hello</br>
 </br>
 ## Installation in Mac or Linux (e.g. Ubuntu)</br>
+
+### Testing
+For testing no installation is needed, just make the bash version executable with</br>
+chmod +x lcs.sh</br>
+If you like the concept, compile the fast and compact GO version with full functionality.
+
 ### To compile on Linux</br>
   sudo apt install golang && go build -o lcs main.go</br>
   ./lcs --help</br>
