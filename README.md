@@ -44,19 +44,31 @@ Print/View cmd:           lcs --print hello</br>
 
 ### Testing
 For testing no installation is needed, just make the bash version executable with</br>
-chmod +x lcs.sh</br>
+```
+chmod +x lcs.sh
+./lcs.sh --help
+```
 If you like the concept, compile the fast and compact GO version with full functionality.
 
 ### To compile for Linux</br>
-  sudo apt install golang</br>
-  go build -o lcs lcs.go</br>
-  ./lcs --help</br>
-#To install locally</br>
-  sudo cp lcs /usr/local/bin/</br>
-
+```
+#install GO compiler (Ubuntu/apt)
+sudo apt install golang
+#compile and test run in directory
+go build -o lcs lcs.go
+./lcs --help
+#to install locally in sys
+sudo cp lcs /usr/local/bin/
+```
+  
 ### To compile for Mac</br>
-  brew install go</br>
-  go build -o lcs lcs.go</br>
-  ./lcs --help</br>
-#To install locally</br>
-  sudo cp lcs /usr/local/bin/</br>
+```
+#install GO compiler
+brew install go
+#compile and test run in directory
+go build -o lcs lcs.go
+./lcs --help
+#to install locally in sys
+sudo cp lcs /usr/local/bin/
+lcs --help
+```
