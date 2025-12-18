@@ -1,14 +1,13 @@
 #!/bin/bash
 # lcs - library command search (Bash Version)
-# Version 0.9
+# Version 0.91
 # © 2025 by Alexander Dorn, MIT license
 
 # To install:
 # chmod +x lcs.sh
-# sudo cp lcs.sh /usr/local/bin/
-# lcs.sh --help
+# sudo mv lcs.sh /usr/local/bin/
 
-APP_VERSION="0.9"
+APP_VERSION="0.91"
 DB_FILE="$HOME/.lcs-db.csv"
 VERBOSE=0
 ADD_MODE=0
@@ -16,6 +15,7 @@ REMOVE_MODE=0
 EDIT_MODE=0
 PRINT_MODE=0
 COPY_MODE=0
+FAST_CHOICE=0
 
 # usage function
 usage() {
@@ -43,6 +43,7 @@ usage() {
     echo "  --help, -h     Show this help"
     echo "  --version      Show version info"
     echo "  --verbose, -v  Show verbose logging"
+    echo "  --fast, -f     Fast select option number (e.g. -f 2)"
     echo "  --print        Print command only"
     echo "  --copy         Copy command to clipboard"
     echo "                 (no execution)"
@@ -53,6 +54,11 @@ usage() {
     echo "  --remove       Search and remove a command"
     echo "  --db           Path to custom database"
     echo "                 default: ~/.lcs-db.csv"
+    echo ""
+    echo "Using Variables:"
+    echo "  You can define variables in commands to be filled at runtime."
+    echo "  Syntax: {\"Label\":\"DefaultValue\"}"
+    echo "  Example: ssh -i {\"KeyFile\":\"~/.ssh/id_rsa\"} user@host"
 }
 
 # Parse arguments
@@ -63,6 +69,10 @@ while [[ "$#" -gt 0 ]]; do
         -h|--help) usage; exit 0 ;;
         --version) echo "lcs version $APP_VERSION"; exit 0 ;;
         -v|--verbose) VERBOSE=1 ;;
+        -f|--fast)
+            FAST_CHOICE="$2"
+            shift # skip the number argument
+            ;;
         --print) PRINT_MODE=1 ;;
         --copy) COPY_MODE=1 ;;
         --add) ADD_MODE=1 ;;
@@ -74,7 +84,12 @@ while [[ "$#" -gt 0 ]]; do
             if [ "$ADD_MODE" -eq 1 ]; then
                  ADD_ARGS+=("$1")
             else
-                 SEARCH_ARGS="$SEARCH_ARGS $1"
+                 # Bugfix: Only add space if SEARCH_ARGS is not empty
+                 if [ -z "$SEARCH_ARGS" ]; then
+                     SEARCH_ARGS="$1"
+                 else
+                     SEARCH_ARGS="$SEARCH_ARGS $1"
+                 fi
             fi
             ;;
     esac
@@ -150,7 +165,18 @@ while IFS= read -r line; do
 done <<< "$MATCHES"
 
 # --- SELECTION LOGIC ---
-if [ "$COUNT" -eq 1 ]; then
+if [ "$FAST_CHOICE" -gt 0 ]; then
+    # --- FAST SELECTION MODE ---
+    if [ "$FAST_CHOICE" -gt "$COUNT" ]; then
+        echo "Error: Fast choice $FAST_CHOICE is out of range. Only $COUNT matches found."
+        exit 1
+    fi
+    SELECTION=$FAST_CHOICE
+    if [ "$VERBOSE" -eq 1 ]; then
+         echo "Fast selected [$SELECTION]: ${DESCRIPTIONS[$SELECTION]}"
+    fi
+
+elif [ "$COUNT" -eq 1 ]; then
     # AUTO SELECT
     SELECTION=1
     echo "Found 1 match: ${DESCRIPTIONS[1]}"
