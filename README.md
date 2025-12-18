@@ -37,8 +37,8 @@ Echo test;echo "Hello World"</br>
 Add a command :           lcs --add "Echo test" 'echo "Hello World"'</br>
 Execute/recall :          lcs hello</br>
 Copy cmd to clipboard:    lcs --copy hello</br>
-Remove command            lcs --remove hello</br>
-Print/View cmd            lcs --print hello</br>
+Remove command:           lcs --remove hello</br>
+Print/View cmd:           lcs --print hello</br>
 </br>
 ## Installation in Mac or Linux (e.g. Ubuntu)</br>
 
