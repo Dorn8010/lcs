@@ -1,6 +1,7 @@
 // lcs - library command search
-// Version 0.91 (Fast Select + Help Update)
+// Version 0.92 (Robust CSV Parser)
 // © 2025 by Alexander Dorn, MIT license
+// https://github.com/Dorn8010/lcs
 
 // To compile on Linux :
 // sudo apt install golang && go build -o lcs lcs.go
@@ -16,6 +17,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io" // Added for EOF handling
 	"os"
 	"os/exec"
 	"os/signal" // Needed for signal masking
@@ -35,7 +37,7 @@ type Entry struct {
 	OriginalIndex int // Needed for removal/edit
 }
 
-const appVersion = "0.91"
+const appVersion = "0.92"
 
 func main() {
 	// 1. Setup Flags
@@ -63,13 +65,13 @@ func main() {
 		fmt.Println("============================================")
 		fmt.Println("Library Command Search tool for CLI commands")
 		fmt.Println("Store and find long commands easily")
-		fmt.Println("© 2025 by Alexander Dorn            MIT lic.")
-		fmt.Printf("                                Version %s\n", appVersion)
+		fmt.Println("© 2025 by Alexander Dorn         MIT license")
+		fmt.Printf("                                 Version %s\n", appVersion)
 		fmt.Println("============================================\n")
-		fmt.Println("Usage: lcs [option] search_term\n")
+		fmt.Println("Usage: lcs [option] search_term_last\n")
 		fmt.Println("============================================")
-		fmt.Println("Searches for a command in the descr.")
-		fmt.Println("and offers the findings for exec.\n")
+		fmt.Println("Searches for a command in the description")
+		fmt.Println("and offers the findings for execution\n")
 		fmt.Println("The DB contains an explanation and")
 		fmt.Println("the command with optional variables\n")
 		fmt.Println("~/.lcs-db.csv is a ; separated CSV")
@@ -154,7 +156,7 @@ func main() {
 		return
 	}
 
-	// 3. Open and Parse CSV
+	// 3. Open and Parse CSV (Robust Mode)
 	file, err := os.Open(dbPath)
 	if err != nil {
 		fmt.Printf("Error opening DB (%s): %v\n", dbPath, err)
@@ -166,11 +168,25 @@ func main() {
 	reader := csv.NewReader(file)
 	reader.Comma = ';'
 	reader.FieldsPerRecord = -1
+	reader.Comment = '#'     // Treat lines starting with # as comments
+	reader.LazyQuotes = true // Allow quotes to appear in non-quoted fields
 
-	rawRecords, err := reader.ReadAll()
-	if err != nil {
-		fmt.Println("Error reading CSV:", err)
-		os.Exit(1)
+	var rawRecords [][]string
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		// If there is a parsing error, skip this line and continue
+		if err != nil {
+			continue
+		}
+		// Ensure valid record
+		if len(record) < 2 {
+			continue
+		}
+		rawRecords = append(rawRecords, record)
 	}
 
 	// 4. Search Logic
@@ -208,7 +224,9 @@ func main() {
 			os.Exit(1)
 		}
 		selectionIndex = fastChoice
-		fmt.Printf("Fast selected [%d]: %s\n", selectionIndex, matches[selectionIndex-1].Description)
+		if *verboseFlag {
+			fmt.Printf("Fast selected [%d]: %s\n", selectionIndex, matches[selectionIndex-1].Description)
+		}
 	} else if len(matches) == 1 {
 		selectionIndex = 1
 		fmt.Printf("Found 1 match: %s\n", matches[0].Description)
@@ -255,7 +273,7 @@ func main() {
 			fmt.Println("Error opening DB for rewrite:", err)
 			os.Exit(1)
 		}
-		
+
 		writer := csv.NewWriter(f)
 		writer.Comma = ';'
 		if err := writer.WriteAll(newRecords); err != nil {
@@ -273,7 +291,7 @@ func main() {
 	// --- EDIT SPECIFIC ---
 	if *editFlag {
 		fmt.Println("\n--- Edit Entry (Press Enter to keep current) ---")
-		
+
 		fmt.Printf("Description [%s]: ", selectedEntry.Description)
 		newDesc, _ := consoleReader.ReadString('\n')
 		newDesc = strings.TrimSpace(newDesc)
@@ -334,7 +352,7 @@ func main() {
 	// --- FEATURE: COPY TO CLIPBOARD ---
 	if *copyFlag {
 		var copyCmd *exec.Cmd
-		
+
 		if runtime.GOOS == "darwin" {
 			copyCmd = exec.Command("pbcopy")
 		} else if runtime.GOOS == "linux" {
@@ -388,8 +406,8 @@ func main() {
 	// Notify the channel for SIGINT (Ctrl+C) and SIGTERM
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	// Start a goroutine that keeps the parent alive but does nothing 
-	// when a signal is received. This allows the child process (SSH/Bash), 
+	// Start a goroutine that keeps the parent alive but does nothing
+	// when a signal is received. This allows the child process (SSH/Bash),
 	// which shares the terminal, to receive and handle the signal itself.
 	go func() {
 		for range sigChan {
