@@ -7,7 +7,7 @@
 # chmod +x lcs.sh
 # sudo mv lcs.sh /usr/local/bin/
 
-APP_VERSION="0.91"
+APP_VERSION="0.92"
 DB_FILE="$HOME/.lcs-db.csv"
 VERBOSE=0
 ADD_MODE=0
