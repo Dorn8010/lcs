@@ -3,9 +3,9 @@
 // © 2025 by Alexander Dorn, MIT license
 
 // To compile on Linux :
-// sudo apt install golang && go build -o lcs main.go
+// sudo apt install golang && go build -o lcs lcs.go
 // To compile on Mac :
-// brew install go && go build -o lcs main.go
+// brew install go && go build -o lcs lcs.go
 // To install locally
 // sudo cp lcs /usr/local/bin/
 
