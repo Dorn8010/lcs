@@ -1,6 +1,6 @@
 #!/bin/bash
 # lcs - library command search (Bash Version)
-# Version 0.91
+# Version 0.91 (Fix: MacOS Bash 3.2 Compatibility)
 # © 2025 by Alexander Dorn, MIT license
 
 # To install:
@@ -23,7 +23,7 @@ usage() {
     echo "Library Command Search tool for CLI commands"
     echo "Store and find long commands easily"
     echo "                                Version $APP_VERSION"
-    echo "© 2025 by Alexander Dorn, MIT lic."
+    echo "© 2025 by Alexander Dorn, MIT license"
     echo "============================================"
     echo ""
     echo "Usage: lcs [options] search_term"
@@ -224,14 +224,19 @@ if [ "$REMOVE_MODE" -eq 1 ] || [ "$EDIT_MODE" -eq 1 ]; then
     
     # EDIT MODE Logic
     if [ "$EDIT_MODE" -eq 1 ]; then
-        echo "--- Edit Entry ---"
-        # read -e -i allows pre-filling the input buffer!
-        read -e -p "Description: " -i "$OLD_DESC" NEW_DESC
-        read -e -p "Command: " -i "$OLD_CMD" NEW_CMD
+        echo "--- Edit Entry (Press Enter to keep current) ---"
         
-        if [[ -z "$NEW_DESC" ]] || [[ -z "$NEW_CMD" ]]; then
-            echo "Error: cannot be empty. Edit cancelled (entry removed)."
-            exit 1
+        # MacOS / Bash 3.2 Compatible logic (No -i flag)
+        echo "Current Desc: $OLD_DESC"
+        read -p "New Desc: " NEW_DESC
+        if [ -z "$NEW_DESC" ]; then
+            NEW_DESC="$OLD_DESC"
+        fi
+
+        echo "Current Cmd: $OLD_CMD"
+        read -p "New Cmd: " NEW_CMD
+        if [ -z "$NEW_CMD" ]; then
+            NEW_CMD="$OLD_CMD"
         fi
         
         echo "${NEW_DESC};${NEW_CMD}" >> "$DB_FILE"
@@ -244,21 +249,41 @@ fi
 FINAL_CMD="${COMMANDS[$SELECTION]}"
 
 # --- Parameter Parsing Logic ---
-# Loop looking for {"Key":"Val"} pattern
-while [[ "$FINAL_CMD" =~ \{(\"[^\"]+\")\:(\"[^\"]*\")\} ]]; do
+# Defined outside loop for compatibility
+VAR_REGEX='\{("[^"]+"):[[:space:]]*("[^"]*")\}'
+
+while [[ "$FINAL_CMD" =~ $VAR_REGEX ]]; do
     FULL_MATCH="${BASH_REMATCH[0]}" 
     RAW_KEY="${BASH_REMATCH[1]}" 
     RAW_VAL="${BASH_REMATCH[2]}" 
-    # Strip quotes
-    KEY="${RAW_KEY:1:-1}" 
-    VAL="${RAW_VAL:1:-1}"
 
-    # Prompt user with default value
-    read -e -p "Input for '$KEY' [$VAL]: " -i "$VAL" USER_INPUT
+    # --- FIX FOR BASH 3.2 (MacOS) ---
+    # Bash 3.2 does not support negative substring indexing like ${VAR:1:-1}
+    # We must calculate length manually.
     
-    # Escape special chars for sed replacement
-    SAFE_MATCH=$(printf '%s\n' "$FULL_MATCH" | sed 's/[[\.*^$/]/\\&/g')
-    SAFE_INPUT=$(printf '%s\n' "$USER_INPUT" | sed 's/[[\.*^$/]/\\&/g')
+    # Calculate length - 2 (to remove surrounding quotes)
+    KLEN=$((${#RAW_KEY}-2))
+    VLEN=$((${#RAW_VAL}-2))
+    
+    # Extract Substring
+    KEY="${RAW_KEY:1:$KLEN}"
+    VAL="${RAW_VAL:1:$VLEN}"
+
+    # MacOS / Bash 3.2 Compatible logic
+    read -e -p "Input for '$KEY' [$VAL]: " USER_INPUT
+    
+    if [ -z "$USER_INPUT" ]; then
+        USER_INPUT="$VAL"
+    fi
+    
+    # ESCAPING FOR SED:
+    # 1. Escape the PATTERN (FULL_MATCH). 
+    SAFE_MATCH=$(printf '%s\n' "$FULL_MATCH" | sed 's/[][\.*^$/]/\\&/g')
+
+    # 2. Escape the REPLACEMENT (USER_INPUT). 
+    #    We must escape only: \ / & (do NOT escape . or *)
+    #    Note: We escape backslash first!
+    SAFE_INPUT=$(printf '%s\n' "$USER_INPUT" | sed 's/\\/\\\\/g; s/\//\\\//g; s/&/\\&/g')
     
     # Replace ONLY the first occurrence
     FINAL_CMD=$(echo "$FINAL_CMD" | sed "s/$SAFE_MATCH/$SAFE_INPUT/")
