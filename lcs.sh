@@ -1,6 +1,6 @@
 #!/bin/bash
 # lcs - library command search (Bash Version)
-# Version 0.91 (Fix: MacOS Bash 3.2 Compatibility)
+# Version 0.92 (Fix: MacOS Bash 3.2 Compatibility + # for comments in CSV)
 # © 2025 by Alexander Dorn, MIT license
 
 # To install:
@@ -26,11 +26,11 @@ usage() {
     echo "© 2025 by Alexander Dorn, MIT license"
     echo "============================================"
     echo ""
-    echo "Usage: lcs [options] search_term"
+    echo "Usage: lcs [options] search_term_last"
     echo ""
     echo "============================================"
-    echo "Searches for a command in the descr."
-    echo "and offers the findings for exec."
+    echo "Searches for a command in the description"
+    echo "and offers the findings for execution"
     echo ""
     echo "The DB contains an explanation and"
     echo "the command with optional variables"
@@ -133,8 +133,8 @@ if [ "$ADD_MODE" -eq 1 ]; then
 fi
 
 # Search (grep)
-# We use grep with line numbers (-n) to help with removal/edit
-MATCHES=$(grep -n -i "$SEARCH_ARGS" "$DB_FILE")
+# We use grep with line numbers (-n) to help with removal/edit - lines starting with # count as comment only
+MATCHES=$(grep -n -i "$SEARCH_ARGS" "$DB_FILE" | grep -v "^[0-9]*:#")
 
 if [ -z "$MATCHES" ]; then
     echo "No matches found."
