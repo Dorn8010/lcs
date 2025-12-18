@@ -49,14 +49,14 @@ If you like the concept, compile the fast and compact GO version with full funct
 
 ### To compile for Linux</br>
   sudo apt install golang</br>
-  go build -o lcs main.go</br>
+  go build -o lcs lcs.go</br>
   ./lcs --help</br>
 To install locally</br>
   sudo cp lcs /usr/local/bin/</br>
 
 ### To compile for Mac</br>
   brew install go</br>
-  go build -o lcs main.go</br>
+  go build -o lcs lcs.go</br>
   ./lcs --help</br>
 To install locally</br>
   sudo cp lcs /usr/local/bin/</br>
