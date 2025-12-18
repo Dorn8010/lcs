@@ -47,14 +47,16 @@ For testing no installation is needed, just make the bash version executable wit
 chmod +x lcs.sh</br>
 If you like the concept, compile the fast and compact GO version with full functionality.
 
-### To compile on Linux</br>
-  sudo apt install golang && go build -o lcs main.go</br>
+### To compile for Linux</br>
+  sudo apt install golang</br>
+  go build -o lcs main.go</br>
   ./lcs --help</br>
 To install locally</br>
   sudo cp lcs /usr/local/bin/</br>
 
-### To compile on Mac</br>
-  brew install go && go build -o lcs main.go</br>
+### To compile for Mac</br>
+  brew install go</br>
+  go build -o lcs main.go</br>
   ./lcs --help</br>
 To install locally</br>
   sudo cp lcs /usr/local/bin/</br>
