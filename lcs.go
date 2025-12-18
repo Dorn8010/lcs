@@ -76,7 +76,7 @@ func main() {
 		fmt.Println("the command with optional variables\n")
 		fmt.Println("~/.lcs-db.csv is a ; separated CSV")
 		fmt.Println("Here an example of an entry :")
-		fmt.Println(`Echo test;echo "Hello World"`)
+		fmt.Println("Echo test;echo \"Hello World\" ")
 		fmt.Println("\nOptions :")
 		fmt.Println("  --help, -h     Show this help")
 		fmt.Println("  --version      Show version info")
