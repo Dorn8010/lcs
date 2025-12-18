@@ -51,12 +51,12 @@ If you like the concept, compile the fast and compact GO version with full funct
   sudo apt install golang</br>
   go build -o lcs lcs.go</br>
   ./lcs --help</br>
-To install locally</br>
+#To install locally</br>
   sudo cp lcs /usr/local/bin/</br>
 
 ### To compile for Mac</br>
   brew install go</br>
   go build -o lcs lcs.go</br>
   ./lcs --help</br>
-To install locally</br>
+#To install locally</br>
   sudo cp lcs /usr/local/bin/</br>
