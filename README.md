@@ -3,7 +3,7 @@ Library Command Search tool for CLI commands</br>
 Store and find long commands easily</br>
 ============================================
 A CLI based simple, fast and sleek command library tool, to store complex commands with descriptions and shortcuts.</br>
-It can also ask for user defined variables.</br>
+It can also ask for user defined variables. The command library can be easily transfered from system to system by copying the library file ~/.lcs-db.csv</br>
 </br>
 © 2025 by Alexander Dorn - MIT license</br>
 </br>
